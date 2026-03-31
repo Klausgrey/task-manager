@@ -55,8 +55,9 @@ app.post("/login", async (req, res) => {
 	}
 });
 
-// facing issues 
+// facing issues
 app.post("/projects", verifyToken, async (req, res) => {
+	const { title } = req.body;
 	const userId = req.user.id;
 
 	try {
@@ -68,7 +69,6 @@ app.post("/projects", verifyToken, async (req, res) => {
 });
 
 app.get("/projects", verifyToken, async (req, res) => {
-	const { title } = req.body;
 	const userId = req.user.id;
 
 	try {
