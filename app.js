@@ -15,6 +15,11 @@ const verifyToken = require("./middleware/auth");
 const app = express();
 app.use(express.json());
 
+mongoose
+	.connect(MONGO_URI)
+	.then(() => console.log("Connected to MongoDB"))
+	.catch((err) => console.log(err));
+
 app.post("/register", async (req, res) => {
 	const { username, password } = req.body;
 
@@ -49,9 +54,28 @@ app.post("/login", async (req, res) => {
 		res.json({ message: "Something went wrong" });
 	}
 });
-mongoose
-	.connect(MONGO_URI)
-	.then(() => console.log("Connected to MongoDB"))
-	.catch((err) => console.log(err));
+
+// facing issues 
+app.post("/projects", verifyToken, async (req, res) => {
+	const userId = req.user.id;
+
+	try {
+		await Projects.create({ title, ownerId: userId });
+		res.json({ message: "Project created successfully" });
+	} catch (err) {
+		res.json({ err });
+	}
+});
+
+app.get("/projects", verifyToken, async (req, res) => {
+	const { title } = req.body;
+	const userId = req.user.id;
+
+	try {
+		await Projects.findById({ ownerId: userId });
+	} catch (err) {
+		res.json({ err });
+	}
+});
 
 app.listen(3000);
