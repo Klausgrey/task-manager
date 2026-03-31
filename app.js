@@ -55,7 +55,6 @@ app.post("/login", async (req, res) => {
 	}
 });
 
-// facing issues
 app.post("/projects", verifyToken, async (req, res) => {
 	const { title } = req.body;
 	const userId = req.user.id;
@@ -72,7 +71,27 @@ app.get("/projects", verifyToken, async (req, res) => {
 	const userId = req.user.id;
 
 	try {
-		await Projects.findById({ ownerId: userId });
+		const result = await Projects.find({ ownerId: userId });
+		res.json({ result });
+	} catch (err) {
+		res.json({ err });
+	}
+});
+
+app.delete("/projects/:id", verifyToken, async (req, res) => {
+	const projectId = req.params.id;
+	const userId = req.user.id;
+
+	try {
+		const check = await Projects.findById(projectId);
+		if (!check) {
+			return res.status(404);
+		}
+		if (check.ownerId !== userId)
+			return res.status(403).json({ message: "Forbidden" });
+
+		await Projects.findByIdAndDelete(projectId);
+		res.json({ message: "Deleted successfully" });
 	} catch (err) {
 		res.json({ err });
 	}
