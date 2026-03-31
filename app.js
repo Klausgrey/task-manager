@@ -97,4 +97,54 @@ app.delete("/projects/:id", verifyToken, async (req, res) => {
 	}
 });
 
-app.listen(3000);
+app.post("/projects/:projectId/tasks", verifyToken, async (req, res) => {
+	const projectId = req.params.projectId;
+	const { title, description } = req.body;
+	try {
+		const check = Projects.findById(projectId);
+		if (!check) {
+			return res.status(404);
+		}
+		await Tasks.create({ title, description, projectId });
+		res.json({ message: "Task created successfully" });
+	} catch (err) {
+		res.json({ err });
+	}
+});
+app.get("/projects/:projectId/tasks", verifyToken, async (req, res) => {
+	const projectId = req.params.projectId;
+
+	try {
+		const check = await Projects.findById(projectId);
+		if (!check) {
+			return res.status(404).json(projectId);
+		}
+		const result = await Tasks.find({ projectId });
+		res.json({ result });
+	} catch (err) {
+		res.json({ err });
+	}
+});
+app.patch(
+	"/projects/:projectId/tasks/:taskId",
+	verifyToken,
+	async (req, res) => {
+		const projectId = req.params.projectId;
+		const taskId = req.params.taskId;
+		const { status } = req.body;
+
+		try {
+			const check = await Projects.findById(projectId);
+			if (!check) {
+				return res.status(404);
+			}
+			await Tasks.findByIdAndUpdate(taskId, { status });
+			res.json({ message: "Updated" });
+		} catch (err) {
+			res.json({ err });
+		}
+	},
+);
+app.listen(3000, () => {
+	console.log("Server is running");
+});
